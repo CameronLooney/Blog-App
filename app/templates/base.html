@@ -1,18 +1,30 @@
 <html>
     <head>
-      {% if title %}
-      <title>{{ title }} - Blog</title>
-      {% else %}
-      <title>Welcome to my Blog</title>
-      {% endif %}
+        {% if title %}
+        <title>{{ title }} - microblog</title>
+        {% else %}
+        <title>Cameron's ML Blog</title>
+        {% endif %}
     </head>
     <body>
-        <div>
-            <a href="/index">Home</a>
+<div>
+            Cameron's Blog:
+            <a href="/index">Home</a> <!-- link to Home page -->
             <a href="/login">Login</a>
         </div>
-
         <hr>
+        <!-- for loop to append message to list (will change later) -->
+        <!-- with construct needed to assign var -->
+        {% with messages = get_flashed_messages() %}
+        <!-- if message has some content -->
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+</ul>
+        {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </body>
 </html>
