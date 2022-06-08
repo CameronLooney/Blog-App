@@ -4,7 +4,8 @@ from app import app
 # export FLASK_APP=blog.py
 # export FLASK_ENV=development
 #  flask run
-
+# flask db init
+# flask db migrate -m "Database table name"
 
 '''
 HTML COMMENTS
