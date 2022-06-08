@@ -9,8 +9,8 @@
     <body>
 <div>
             Cameron's Blog:
-            <a href="/index">Home</a> <!-- link to Home page -->
-            <a href="/login">Login</a>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('login') }}">Login</a> <!-- use url_for as would have to change url's manually otherwise -->
         </div>
         <hr>
         <!-- for loop to append message to list (will change later) -->
