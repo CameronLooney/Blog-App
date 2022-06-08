@@ -6,6 +6,7 @@ from app import app
 #  flask run
 # flask db init
 # flask db migrate -m "Database table name"
+# fask db upgrade --- this acctually applies the changes
 
 '''
 HTML COMMENTS

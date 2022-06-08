@@ -15,6 +15,9 @@ import sqlalchemy as sa
 # flask db migrate doesnt command does not make any changes to the database, it just generates the migration script.
 # To apply the changes to the database, the flask db upgrade command must be used
 
+#  Because this application uses SQLite, the upgrade command will detect that a database does not exist and will create it
+#  When working with database servers such as MySQL and PostgreSQL, you have to create the database in the database server before running upgrade.
+
 # revision identifiers, used by Alembic.
 revision = '084c0092b354'
 down_revision = None
