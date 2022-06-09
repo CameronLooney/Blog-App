@@ -4,6 +4,8 @@
 from app import app
 from flask import render_template, flash, redirect, url_for
 from app.form import LoginForm
+from flask_login import current_user, login_user
+from app.models import User
 
 
 # @app.route decorator creates an association between the URL given as an argument and the function.
@@ -27,15 +29,23 @@ def index():
     return render_template('index.html', user = user, posts = posts)
 
 # new view for login page
-@app.route('/login', methods=['GET', 'POST']) # accept both get and post
-def login():
-    form = LoginForm() # generate login object
-    if form.validate_on_submit():
-        # if the form is okay then we will redirect to home page
-        # if the data is not valid we render the login template again
 
-        flash('Login requested for user {}, remember_me={}'.format(
-            form.username.data, form.remember_me.data))
-        return redirect(url_for("index"))
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # if they are logged in stop them from going back to log in page
+    # current_user variable comes from Flask-Login and can be used at any time
+    # during the handling to obtain the user object that represents the client of the request
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        # filter by will only include matching usernames
+        # first will return user or none if the user doesnt exist
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user, remember=form.remember_me.data)
+        return redirect(url_for('index'))
     return render_template('login.html', title='Sign In', form=form)
 
