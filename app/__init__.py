@@ -14,4 +14,5 @@ from config import Config
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
+from app import routes, models, errors
 from app import routes,models

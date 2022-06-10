@@ -34,3 +34,14 @@ class EditProfile(FlaskForm):
     # multiline box
     about_me = TextAreaField("About Me", validators=[Length(min = 0, max = 200)])
     submit = SubmitField("Submit")
+    # allows the user to keep original name (so if they submit it wont give an error that its taken)
+    def __init__(self, original_username, *args, **kwargs):
+        super(EditProfile, self).__init__(*args, **kwargs)
+        self.original_username = original_username
+    def validate_username(self, username):
+        # if its a new username
+        if username.data != self.original_username:
+            user = User.query.filter_by(username=self.username.data).first()
+            # check if its in db
+            if user is not None:
+                raise ValidationError('Please use a different username.')

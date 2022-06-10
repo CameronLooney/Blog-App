@@ -108,7 +108,7 @@ from app.form import EditProfile
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    form = EditProfile()
+    form = EditProfile(current_user.username)
     if form.validate_on_submit():
         # if form is true we assign the new data to user object
         current_user.username = form.username.data
@@ -117,7 +117,7 @@ def edit_profile():
         db.session.commit()
         flash('Your Profile has been updated')
         return redirect(url_for('edit_profile'))
-    # when form is requested for first time (GET method) populate fields with current data 
+    # when form is requested for first time (GET method) populate fields with current data
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
