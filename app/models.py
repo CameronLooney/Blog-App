@@ -57,6 +57,18 @@ class User(UserMixin,db.Model):
     def is_following(self, user):
         return self.followed.filter(
             followers.c.followed_id == user.id).count() > 0
+
+
+
+    def followed_posts(self):
+        # join follower + posts tables  using id to match, order by newest
+        followed = Post.query.join(
+            followers, (followers.c.followed_id == Post.user_id)).filter(
+            followers.c.follower_id == self.id)
+        # get own posts
+        own = Post.query.filter_by(user_id=self.id)
+        # concat both queries and return postsin order 
+        return followed.union(own).order_by(Post.timestamp.desc())
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
