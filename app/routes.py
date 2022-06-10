@@ -11,21 +11,26 @@ from app.models import User, Post
 # @app.route decorator creates an association between the URL given as an argument and the function.
 # when a web browser requests either of these two URLs,
 # Flask is going to invoke this function and pass the return value of it back to the browser as a response
-@app.route("/")
-@app.route('/index')
+from app.form import PostForm
+from app.models import Post
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
+@login_required
 def index():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post is now live!')
+        return redirect(url_for('index'))
+    posts = current_user.followed_posts().all()
+    return render_template("index.html", title='Home Page', form=form,
+                           posts=posts)
 
-    posts = [{
-                 'author': {'username'  : 'Cameron'},
-                 'body': 'I just a baby'},
-             {
-                 'author': {'username': 'Megan'},
-                 'body': 'Im panicking, im gonna lose me job'}
-
-             ]
     # there are a couple of placeholders for the dynamic content, enclosed in {{ ... }} sections.
     # These placeholders represent the parts of the page that are variable and will only be known at runtime.
-    return render_template('index.html', posts = posts)
+
 
 # new view for login page
 from flask import request
