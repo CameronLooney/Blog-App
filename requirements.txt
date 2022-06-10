@@ -33,7 +33,7 @@ six
 SQLAlchemy
 urllib3
 visitor
-Werkzeu
+Werkzeug
 WTForms
 gunicorn
 psycopg2
