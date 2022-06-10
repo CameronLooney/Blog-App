@@ -94,3 +94,11 @@ def user(username):
             'body': 'Im panicking, im gonna lose me job'}]
 
     return render_template('user.html', user=user, posts=posts)
+
+from datetime import datetime
+# before_request decorator will execute this block before any view function is run
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.utcnow()
+        db.session.commit()
