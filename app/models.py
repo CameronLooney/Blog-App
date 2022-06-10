@@ -5,8 +5,13 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 # UserMixin that includes generic implementations that are appropriate for most user model classes.
 from flask_login import UserMixin
+followers = db.Table('followers',
+    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
+)
 
 class User(UserMixin,db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
@@ -15,6 +20,20 @@ class User(UserMixin,db.Model):
     about_me = db.Column(db.String(200))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     # run flask db migrate -m "new fields in user model"
+
+    '''
+    
+    - User: is the right side entity of the relationship (the left side entity is the parent class). User is both
+    - primaryjoin indicates the condition that links the left side entity (the follower user) with the association table.
+    - secondaryjoin indicates the condition that links the right side entity (the followed user) with the association table
+    - backref defines how this relationship will be accessed from the right side entity.
+    - lazy is similar to the parameter of the same name in the backref, but this one applies to the left side query instead of the right side.
+    '''
+    followed = db.relationship(
+        'User', secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -42,3 +61,6 @@ from app import login # ...
 def load_user(id):
     return User.query.get(int(id))
 
+
+# followers table
+# allows many to many link
