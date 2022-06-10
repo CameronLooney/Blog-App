@@ -5,7 +5,7 @@ from app import app
 from flask import render_template, flash, redirect, url_for
 from app.form import LoginForm
 from flask_login import current_user,login_user, logout_user,login_required
-from app.models import User
+from app.models import User, Post
 
 
 # @app.route decorator creates an association between the URL given as an argument and the function.
@@ -83,17 +83,20 @@ def register():
 # dynamic route -> takes the username of user and returns their page or error (as anything can be entered here)
 @app.route('/user/<username>')
 # as this is the users private page they must log in to enter
+
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    posts = [{
-        'author':user,
-        'body': 'I just a baby'},
-        {
-            'author': user,
-            'body': 'Im panicking, im gonna lose me job'}]
-
-    return render_template('user.html', user=user, posts=posts)
+    page = request.args.get('page', 1, type=int)
+    posts = user.posts.order_by(Post.timestamp.desc()).paginate(
+        page, app.config['POSTS_PER_PAGE'], False)
+    next_url = url_for('user', username=user.username, page=posts.next_num) \
+        if posts.has_next else None
+    prev_url = url_for('user', username=user.username, page=posts.prev_num) \
+        if posts.has_prev else None
+    form = EmptyForm()
+    return render_template('user.html', user=user, posts=posts.items,
+                           next_url=next_url, prev_url=prev_url, form=form)
 
 from datetime import datetime
 # before_request decorator will execute this block before any view function is run
@@ -123,3 +126,43 @@ def edit_profile():
         form.about_me.data = current_user.about_me
     return render_template('edit_profile.html', title='Edit Profile',
                            form=form)
+
+
+from app.form import EmptyForm
+@app.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow(username):
+    # generate empty form to ensure data is passed
+    form = EmptyForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=username).first()
+        if user is None:
+            flash('User {} not found.'.format(username))
+            return redirect(url_for('index'))
+        if user == current_user:
+            flash('You cannot follow yourself!')
+            return redirect(url_for('user', username=username))
+        current_user.follow(user)
+        db.session.commit()
+        flash('You are following {}!'.format(username))
+        return redirect(url_for('user', username=username))
+    else:
+        return redirect(url_for('index'))
+@app.route('/unfollow/<username>', methods=['POST'])
+@login_required
+def unfollow(username):
+    form = EmptyForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=username).first()
+        if user is None:
+            flash('User {} not found.'.format(username))
+            return redirect(url_for('index'))
+        if user == current_user:
+            flash('You cannot unfollow yourself!')
+            return redirect(url_for('user', username=username))
+        current_user.unfollow(user)
+        db.session.commit()
+        flash('You are not following {}.'.format(username))
+        return redirect(url_for('user', username=username))
+    else:
+        return redirect(url_for('index'))
