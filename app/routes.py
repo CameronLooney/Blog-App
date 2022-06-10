@@ -13,6 +13,7 @@ from app.models import User, Post
 # Flask is going to invoke this function and pass the return value of it back to the browser as a response
 from app.form import PostForm
 from app.models import Post
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
