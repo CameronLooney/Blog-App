@@ -10,10 +10,10 @@
 <div>
             Cameron's Blog:
             <a href="{{ url_for('index') }}">Home</a>
-            {% if current_user.is_anonymous %}
+            {% if current_user.is_anonymous %} <!-- only True when user isnt logged in -->
             <a href="{{ url_for('login') }}">Login</a> <!-- use url_for as would have to change url's manually otherwise -->
             {% else %}
-            <a href="{{ url_for('logout') }}">Logout</a>
+            <a href="{{ url_for('logout') }}">Logout</a> <!-- this is conditional, only one of login/logout will show -->
             {% endif %}
 
 

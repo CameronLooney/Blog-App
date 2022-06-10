@@ -14,7 +14,6 @@ from app.models import User
 @app.route("/")
 @app.route('/index')
 def index():
-    user = {'username': 'Cameron'}
 
     posts = [{
                  'author': {'username'  : 'Cameron'},
@@ -26,28 +25,32 @@ def index():
              ]
     # there are a couple of placeholders for the dynamic content, enclosed in {{ ... }} sections.
     # These placeholders represent the parts of the page that are variable and will only be known at runtime.
-    return render_template('index.html', user = user, posts = posts)
+    return render_template('index.html', posts = posts)
 
 # new view for login page
+from flask import request
+from werkzeug.urls import url_parse
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # if they are logged in stop them from going back to log in page
-    # current_user variable comes from Flask-Login and can be used at any time
-    # during the handling to obtain the user object that represents the client of the request
+    # if the user is authenticated then redirect to home page
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+    # if the user isnt logged in show them the login form
     form = LoginForm()
     if form.validate_on_submit():
-        # filter by will only include matching usernames
-        # first will return user or none if the user doesnt exist
+        # if they submit details check if they are correct
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
-        return redirect(url_for('index'))
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('index')
+        return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
+
 
 from flask_login import logout_user
 # uses built in logout function ,redirect the user to home page
@@ -55,3 +58,23 @@ from flask_login import logout_user
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+from app import db
+from app.form import RegisterForm
+# ...
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    # if user is logged in already send to home page
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegisterForm()
+    if form.validate_on_submit():
+        # impute details
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        # add user to db
+        db.session.add(user)
+        db.session.commit()
+        flash('Welcome to the Blog {}'.format(form.username.data))
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)

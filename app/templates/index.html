@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 {% block content %}
     <h1 style="color:blue;">Home page</h1>
-    <h2>Welcome back, {{ user.username }} </h2>
+    <h2>Welcome back, {{ current_user.username }} </h2>
     <h3>Posts you missed: </h3>
     {% for post in posts %}
     <div><p>{{post.author.username}} said <b> {{post.body}}</b></p></div>
