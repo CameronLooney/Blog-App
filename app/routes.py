@@ -4,7 +4,7 @@
 from app import app
 from flask import render_template, flash, redirect, url_for
 from app.form import LoginForm
-from flask_login import current_user, login_user
+from flask_login import current_user,login_user, logout_user,login_required
 from app.models import User
 
 
@@ -78,3 +78,19 @@ def register():
         flash('Welcome to the Blog {}'.format(form.username.data))
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
+
+
+# dynamic route -> takes the username of user and returns their page or error (as anything can be entered here)
+@app.route('/user/<username>')
+# as this is the users private page they must log in to enter
+@login_required
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = [{
+        'author':user,
+        'body': 'I just a baby'},
+        {
+            'author': user,
+            'body': 'Im panicking, im gonna lose me job'}]
+
+    return render_template('user.html', user=user, posts=posts)
